@@ -1,0 +1,11 @@
+package com.financapro;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class FinancaProApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(FinancaProApplication.class, args);
+    }
+}
