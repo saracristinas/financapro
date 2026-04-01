@@ -9,8 +9,7 @@ import Debts from './components/debts/Debts'
 import Analytics from './components/analytics/Analytics'
 import Achievements from './components/achievements/Achievements'
 import Team from './components/team/Team'
-import AIChat from './components/ai/AIChat'
-import { LoginPage, RegisterPage } from './components/auth/AuthPages'
+import { LoginPage, RegisterPage, ForgotPasswordPage } from './components/auth/AuthPages'
 import { THEME_OPTIONS, THEME_CREATURES } from './utils'
 import { useState } from 'react'
 
@@ -22,7 +21,6 @@ const TABS = {
   analytics:    { component: Analytics },
   achievements: { component: Achievements },
   team:         { component: Team },
-  ai:           { component: AIChat },
 }
 
 // Ocean background creatures — ambient decoration
@@ -68,9 +66,9 @@ export default function App() {
   }, [themeKey])
 
   if (!token) {
-    return authMode === 'login'
-      ? <LoginPage onSwitch={() => setAuthMode('register')} />
-      : <RegisterPage onSwitch={() => setAuthMode('login')} />
+    if (authMode === 'login') return <LoginPage onSwitch={() => setAuthMode('register')} onForgot={() => setAuthMode('forgot')} />
+    if (authMode === 'register') return <RegisterPage onSwitch={() => setAuthMode('login')} />
+    if (authMode === 'forgot') return <ForgotPasswordPage onSwitch={() => setAuthMode('login')} />
   }
 
   const tab = TABS[activeTab] || TABS.dashboard

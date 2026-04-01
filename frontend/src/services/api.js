@@ -26,6 +26,8 @@ api.interceptors.response.use(
 export const authApi = {
   login: (data) => api.post('/auth/login', data),
   register: (data) => api.post('/auth/register', data),
+  getForgotPasswordQuestion: (email) => api.post('/auth/forgot-password-question', { email }),
+  resetPassword: (data) => api.post('/auth/reset-password', data),
 }
 
 // ── Dashboard ─────────────────────────────────────────
@@ -66,11 +68,6 @@ export const teamApi = {
   list: () => api.get('/team'),
   invite: (data) => api.post('/team/invite', data),
   remove: (id) => api.delete(`/team/${id}`),
-}
-
-// ── AI ────────────────────────────────────────────────
-export const aiApi = {
-  chat: (data) => api.post('/ai/chat', data),
 }
 
 export default api

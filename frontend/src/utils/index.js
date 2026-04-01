@@ -68,7 +68,6 @@ export const ACHIEVEMENTS = [
   { id: 'budget_3months',    emoji: '🦑', title: 'Calamar Persistente', desc: 'Registrou dados por 3 meses', points: 250 },
   { id: 'positive_balance',  emoji: '🌟', title: 'Estrela do Mar', desc: 'Saldo positivo por todo o mês', points: 100 },
   { id: 'team_member',       emoji: '🐡', title: 'Cardume', desc: 'Adicionou um colaborador', points: 75 },
-  { id: 'ai_chat',           emoji: '🦐', title: 'Consultor', desc: 'Conversou com a IA financeira', points: 50 },
 ]
 
 // ── Notification helpers ──────────────────────────────────────────────────────

@@ -49,7 +49,7 @@ function AuthCard({ children, title, subtitle }) {
   )
 }
 
-export function LoginPage({ onSwitch }) {
+export function LoginPage({ onSwitch, onForgot }) {
   const { setAuth } = useAppStore()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
@@ -63,7 +63,15 @@ export function LoginPage({ onSwitch }) {
       const res = await authApi.login(form)
       setAuth(res.data.token, res.data)
     } catch (err) {
-      setError(err.response?.data?.message || 'E-mail ou senha incorretos')
+      if (!err.response) {
+        setError('O servidor está desligado. Ligue o backend Java na porta 8080.')
+      } else {
+        const msg = err.response.data?.message || 'E-mail ou senha incorretos'
+        const fields = err.response.data?.fields
+          ? Object.entries(err.response.data.fields).map(([f, m]) => `${f}: ${m}`).join(', ')
+          : ''
+        setError(fields ? `${msg} (${fields})` : msg)
+      }
     } finally { setLoading(false) }
   }
 
@@ -89,6 +97,11 @@ export function LoginPage({ onSwitch }) {
         <button type="submit" disabled={loading} className="btn-accent w-full justify-center !py-3 text-base">
           {loading ? 'Entrando...' : '🌊 Entrar'}
         </button>
+        <div className="text-right">
+          <button type="button" onClick={onForgot} className="text-[10px] text-muted hover:text-accent transition-colors uppercase tracking-widest font-bold">
+            Esqueceu a senha?
+          </button>
+        </div>
       </form>
       <div className="divider" />
       <p className="text-center text-xs text-muted">
@@ -101,7 +114,7 @@ export function LoginPage({ onSwitch }) {
 
 export function RegisterPage({ onSwitch }) {
   const { setAuth } = useAppStore()
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '', securityQuestion: '', securityAnswer: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -112,10 +125,24 @@ export function RegisterPage({ onSwitch }) {
     if (form.password.length < 6) { setError('Senha deve ter pelo menos 6 caracteres'); return }
     setLoading(true)
     try {
-      const res = await authApi.register({ name: form.name, email: form.email, password: form.password })
+      const res = await authApi.register({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        securityQuestion: form.securityQuestion,
+        securityAnswer: form.securityAnswer
+      })
       setAuth(res.data.token, res.data)
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao criar conta')
+      if (!err.response) {
+        setError('O servidor está desligado. Ligue o backend Java na porta 8080.')
+      } else {
+        const msg = err.response.data?.message || 'Erro ao criar conta'
+        const fields = err.response.data?.fields
+          ? Object.entries(err.response.data.fields).map(([f, m]) => `${m}`).join(' | ')
+          : ''
+        setError(fields || msg)
+      }
     } finally { setLoading(false) }
   }
 
@@ -125,6 +152,8 @@ export function RegisterPage({ onSwitch }) {
         {[
           { k: 'name',     label: 'Nome',           type: 'text',     ph: 'Seu nome completo' },
           { k: 'email',    label: 'E-mail',          type: 'email',    ph: 'seu@email.com' },
+          { k: 'securityQuestion', label: 'Pergunta de Segurança (ex: Nome do seu pet)', type: 'text', ph: 'Sua pergunta' },
+          { k: 'securityAnswer', label: 'Resposta de Segurança', type: 'text', ph: 'Sua resposta' },
           { k: 'password', label: 'Senha',           type: 'password', ph: 'Mín. 6 caracteres' },
           { k: 'confirm',  label: 'Confirmar Senha', type: 'password', ph: 'Repita a senha' },
         ].map(f => (
@@ -148,6 +177,86 @@ export function RegisterPage({ onSwitch }) {
       <p className="text-center text-xs text-muted">
         Já tem conta?{' '}
         <button onClick={onSwitch} className="text-accent hover:underline font-semibold">Entrar</button>
+      </p>
+    </AuthCard>
+  )
+}
+
+export function ForgotPasswordPage({ onSwitch }) {
+  const [step, setStep] = useState(1) // 1: Email, 2: Answer & New Password
+  const [email, setEmail] = useState('')
+  const [question, setQuestion] = useState('')
+  const [answer, setAnswer] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleGetQuestion(e) {
+    e.preventDefault()
+    setError(''); setLoading(true)
+    try {
+      const res = await authApi.getForgotPasswordQuestion(email)
+      setQuestion(res.data.securityQuestion)
+      setStep(2)
+    } catch (err) {
+      setError(err.response?.data?.message || 'E-mail não encontrado')
+    } finally { setLoading(false) }
+  }
+
+  async function handleReset(e) {
+    e.preventDefault()
+    setError(''); setLoading(true)
+    try {
+      await authApi.resetPassword({ email, securityAnswer: answer, newPassword })
+      setMessage('Senha alterada com sucesso! Redirecionando...')
+      setTimeout(() => onSwitch(), 2000)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Resposta incorreta ou erro ao alterar')
+    } finally { setLoading(false) }
+  }
+
+  return (
+    <AuthCard title="Recuperar Senha" subtitle="Uma boia de segurança para sua conta 🛟">
+      {step === 1 ? (
+        <form onSubmit={handleGetQuestion} className="space-y-4">
+          <div>
+            <label className="text-[11px] text-muted mb-1.5 block uppercase tracking-wider font-medium">Digite seu E-mail</label>
+            <input type="email" required className="input" value={email}
+              onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
+          </div>
+          {error && <div className="text-xs text-rose-400 font-medium">⚠ {error}</div>}
+          <button type="submit" disabled={loading} className="btn-accent w-full justify-center !py-3">
+            {loading ? 'Buscando...' : 'Continuar'}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={handleReset} className="space-y-4">
+          <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-1">
+            <span className="text-[10px] text-muted uppercase tracking-widest font-bold">Sua Pergunta:</span>
+            <p className="text-sm font-medium">{question}</p>
+          </div>
+          <div>
+            <label className="text-[11px] text-muted mb-1.5 block uppercase tracking-wider font-medium">Sua Resposta</label>
+            <input type="text" required className="input" value={answer}
+              onChange={e => setAnswer(e.target.value)} placeholder="Resposta de segurança" />
+          </div>
+          <div>
+            <label className="text-[11px] text-muted mb-1.5 block uppercase tracking-wider font-medium">Nova Senha</label>
+            <input type="password" required className="input" value={newPassword}
+              onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" />
+          </div>
+          {error && <div className="text-xs text-rose-400 font-medium">⚠ {error}</div>}
+          {message && <div className="text-xs text-emerald-400 font-medium">✓ {message}</div>}
+          <button type="submit" disabled={loading} className="btn-accent w-full justify-center !py-3">
+            {loading ? 'Alterando...' : 'Redefinir Senha'}
+          </button>
+        </form>
+      )}
+      <div className="divider" />
+      <p className="text-center text-xs text-muted">
+        Lembrou a senha?{' '}
+        <button onClick={onSwitch} className="text-accent hover:underline font-semibold">Voltar ao login</button>
       </p>
     </AuthCard>
   )

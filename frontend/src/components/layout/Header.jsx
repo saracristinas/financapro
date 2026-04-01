@@ -14,7 +14,6 @@ const PAGE_TITLES = {
   analytics:    { title: 'Análise',   emoji: '📊' },
   achievements: { title: 'Conquistas',emoji: '🏆' },
   team:         { title: 'Equipe',    emoji: '🐬' },
-  ai:           { title: 'IA Financeira', emoji: '🦑' },
   notifications:{ title: 'Notificações', emoji: '🔔' },
 }
 

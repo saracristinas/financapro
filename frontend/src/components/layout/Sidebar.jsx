@@ -2,7 +2,7 @@ import React from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import {
   LayoutDashboard, CreditCard, PiggyBank, AlertCircle,
-  BarChart2, Users, Bot, LogOut, ChevronRight, Bell, Trophy
+  BarChart2, Users, LogOut, ChevronRight, Bell, Trophy
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { THEME_CREATURES } from '../../utils'
@@ -15,7 +15,6 @@ const NAV = [
   { id: 'analytics',   label: 'Análise',      icon: BarChart2,       emoji: '📊' },
   { id: 'achievements', label: 'Conquistas',   icon: Trophy,          emoji: '🏆' },
   { id: 'team',         label: 'Equipe',       icon: Users,           emoji: '🐬' },
-  { id: 'ai',           label: 'IA',           icon: Bot,             emoji: '🦑' },
 ]
 
 const MOBILE_NAV = NAV.slice(0, 5) // show 5 on mobile bottom nav
