@@ -6,6 +6,7 @@ import com.financapro.model.autenticacao.User;
 import com.financapro.model.equipe.TeamMember;
 import com.financapro.repository.autenticacao.UsuarioRepository;
 import com.financapro.repository.equipe.MembroEquipeRepository;
+import com.financapro.service.compartilhado.EmailService;
 import com.financapro.service.compartilhado.UsuarioAcessoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class EquipeService {
     private final MembroEquipeRepository membroEquipeRepository;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAcessoService usuarioAcessoService;
+    private final EmailService emailService;
 
     public List<MembroEquipeResponseDto> getTeam(String email) {
         User owner = usuarioAcessoService.obterPorEmail(email);
@@ -33,7 +35,13 @@ public class EquipeService {
         TeamMember tm = TeamMember.builder()
             .owner(owner).invitedEmail(req.getEmail()).role(role).build();
         usuarioRepository.findByEmail(req.getEmail()).ifPresent(tm::setMember);
-        return toDto(membroEquipeRepository.save(tm));
+        TeamMember saved = membroEquipeRepository.save(tm);
+
+        // 🚀 Enviar email de convite
+        String linkAceitar = "https://financapro-1.onrender.com"; // Link para aceitar (você pode customizar)
+        emailService.enviarConviteEquipe(req.getEmail(), owner.getName(), linkAceitar);
+
+        return toDto(saved);
     }
 
     public void remove(String email, Long memberId) {
