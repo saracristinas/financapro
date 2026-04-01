@@ -113,6 +113,7 @@ export function LoginPage({ onSwitch, onForgot }) {
 }
 
 export function RegisterPage({ onSwitch }) {
+  console.log("REGISTER PAGE RODANDO NOVO CÓDIGO")
   const { setAuth } = useAppStore()
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '', securityQuestion: '', securityAnswer: '' })
   const [error, setError] = useState('')

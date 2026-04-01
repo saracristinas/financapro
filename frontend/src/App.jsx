@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAppStore } from './store/useAppStore'
 import Sidebar, { MobileBottomNav } from './components/layout/Sidebar'
 import Header from './components/layout/Header'
@@ -7,16 +7,14 @@ import Expenses from './components/expenses/Expenses'
 import Savings from './components/savings/Savings'
 import Debts from './components/debts/Debts'
 import Analytics from './components/analytics/Analytics'
+import { LoginPage, RegisterPage, ForgotPasswordPage } from './components/auth/AuthPages'
 import Achievements from './components/achievements/Achievements'
 import Team from './components/team/Team'
-import { LoginPage, RegisterPage, ForgotPasswordPage } from './components/auth/AuthPages'
 import { THEME_OPTIONS, THEME_CREATURES } from './utils'
-import { useState } from 'react'
 
 const TABS = {
   dashboard:    { component: Dashboard },
   expenses:     { component: Expenses },
-  savings:      { component: Savings },
   debts:        { component: Debts },
   analytics:    { component: Analytics },
   achievements: { component: Achievements },
@@ -61,10 +59,10 @@ export default function App() {
   useEffect(() => {
     const themeClasses = THEME_OPTIONS.map(t => t.class).filter(Boolean)
     document.documentElement.classList.remove(...themeClasses)
-    const selected = THEME_OPTIONS.find(t => t.key === themeKey)
-    if (selected?.class) document.documentElement.classList.add(selected.class)
+    document.documentElement.classList.add(themeKey)
   }, [themeKey])
 
+  // Auth pages
   if (!token) {
     if (authMode === 'login') return <LoginPage onSwitch={() => setAuthMode('register')} onForgot={() => setAuthMode('forgot')} />
     if (authMode === 'register') return <RegisterPage onSwitch={() => setAuthMode('login')} />
