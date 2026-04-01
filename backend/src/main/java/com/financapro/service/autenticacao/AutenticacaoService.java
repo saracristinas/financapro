@@ -3,6 +3,8 @@ package com.financapro.service.autenticacao;
 import com.financapro.dto.autenticacao.AutenticacaoResponseDto;
 import com.financapro.dto.autenticacao.CadastroRequestDto;
 import com.financapro.dto.autenticacao.LoginRequestDto;
+import com.financapro.dto.autenticacao.RecuperarSenhaRequestDto;
+import com.financapro.dto.autenticacao.RedefinirSenhaRequestDto;
 import com.financapro.model.autenticacao.User;
 import com.financapro.repository.autenticacao.UsuarioRepository;
 import com.financapro.security.jwt.JwtUtil;
@@ -28,6 +30,8 @@ public class AutenticacaoService {
             .name(req.getName())
             .email(req.getEmail())
             .password(passwordEncoder.encode(req.getPassword()))
+            .securityQuestion(req.getSecurityQuestion())
+            .securityAnswer(req.getSecurityAnswer())
             .role(User.Role.ADMIN)
             .build();
         usuarioRepository.save(user);
@@ -53,6 +57,22 @@ public class AutenticacaoService {
         res.setRole(user.getRole());
         return res;
     }
+
+    public String getSecurityQuestion(String email) {
+        User user = usuarioRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+        return user.getSecurityQuestion();
+    }
+
+    public void resetPassword(RedefinirSenhaRequestDto req) {
+        User user = usuarioRepository.findByEmail(req.getEmail())
+            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        if (!user.getSecurityAnswer().equalsIgnoreCase(req.getSecurityAnswer())) {
+            throw new IllegalArgumentException("Resposta de segurança incorreta");
+        }
+
+        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        usuarioRepository.save(user);
+    }
 }
-
-

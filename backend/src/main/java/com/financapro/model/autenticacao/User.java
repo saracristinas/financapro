@@ -35,6 +35,12 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "security_question")
+    private String securityQuestion;
+
+    @Column(name = "security_answer")
+    private String securityAnswer;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
@@ -46,4 +52,3 @@ public class User {
         ADMIN, EDITOR, VIEWER
     }
 }
-
