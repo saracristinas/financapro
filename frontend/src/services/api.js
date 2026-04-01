@@ -5,19 +5,41 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
 })
 
+// Interceptor para adicionar token a CADA requisição
 api.interceptors.request.use(config => {
-  const token = useAppStore.getState().token
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  try {
+    const state = useAppStore.getState()
+    const token = state?.token
+
+    if (token && typeof token === 'string') {
+      config.headers.Authorization = `Bearer ${token}`
+      console.log('[API] ✓ Token enviado para:', config.url)
+    } else if (token) {
+      console.warn('[API] ⚠️ Token inválido (não é string):', typeof token, token)
+    } else {
+      console.warn('[API] ⚠️ Sem token para:', config.url)
+    }
+  } catch (error) {
+    console.error('[API] Erro ao obter token:', error)
+  }
+
   return config
 })
 
 api.interceptors.response.use(
   r => r,
   err => {
+    console.error('[API] Erro:', err.response?.status, err.response?.statusText)
+
     if (err.response?.status === 401) {
+      console.error('[API] 401 Unauthorized - fazendo logout')
       useAppStore.getState().logout()
       window.location.href = '/login'
     }
+    if (err.response?.status === 403) {
+      console.error('[API] 403 Forbidden - sem permissão')
+    }
+
     return Promise.reject(err)
   }
 )

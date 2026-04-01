@@ -28,7 +28,6 @@ public class ConfiguracaoSeguranca {
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("OPTIONS", "/**").permitAll() // Permitir preflight
                         .requestMatchers(
                                 "/",
                                 "/index.html",
@@ -46,11 +45,15 @@ public class ConfiguracaoSeguranca {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var config = new CorsConfiguration();
+        // Não use wildcard (*) com allowCredentials(true)
+        // Use padrão específico ou string vazia para permitir qualquer origin
         config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Authorization", "Content-Type"));
-        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization", "Content-Type", "X-Total-Count"));
+        config.setAllowCredentials(false); // False porque estamos usando * com originPatterns
+        config.setMaxAge(3600L); // Cache CORS por 1 hora
+        
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
