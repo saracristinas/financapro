@@ -28,10 +28,11 @@ public class ConfiguracaoSeguranca {
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("OPTIONS", "/**").permitAll() // Permitir preflight
                         .requestMatchers(
                                 "/",
                                 "/index.html",
-                                "/assets/**",   // 🔥 ESSENCIAL (seu erro tava aqui)
+                                "/assets/**",
                                 "/favicon.ico"
                         ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
@@ -48,6 +49,7 @@ public class ConfiguracaoSeguranca {
         config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
