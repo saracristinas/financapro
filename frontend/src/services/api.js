@@ -24,50 +24,50 @@ api.interceptors.response.use(
 
 // ── Auth ──────────────────────────────────────────────
 export const authApi = {
-  login: (data) => api.post('/auth/login', data),
-  register: (data) => api.post('/auth/register', data),
-  getForgotPasswordQuestion: (email) => api.post('/auth/forgot-password-question', { email }),
-  resetPassword: (data) => api.post('/auth/reset-password', data),
+  login: (data) => api.post('/api/auth/login', data),
+  register: (data) => api.post('/api/auth/register', data),
+  getForgotPasswordQuestion: (email) => api.post('/api/auth/forgot-password-question', { email }),
+  resetPassword: (data) => api.post('/api/auth/reset-password', data),
 }
 
 // ── Dashboard ─────────────────────────────────────────
 export const dashboardApi = {
-  get: (month, year) => api.get('/dashboard', { params: { month, year } }),
+  get: (month, year) => api.get('/api/dashboard', { params: { month, year } }),
 }
 
 // ── Transactions ──────────────────────────────────────
 export const transactionsApi = {
-  list: (month, year) => api.get('/transactions', { params: { month, year } }),
-  create: (data) => api.post('/transactions', data),
-  delete: (id) => api.delete(`/transactions/${id}`),
+  list: (month, year) => api.get('/api/transactions', { params: { month, year } }),
+  create: (data) => api.post('/api/transactions', data),
+  delete: (id) => api.delete(`/api/transactions/${id}`),
 }
 
 // ── Savings ───────────────────────────────────────────
 export const savingsApi = {
-  list: () => api.get('/savings'),
-  create: (data) => api.post('/savings', data),
-  update: (id, data) => api.put(`/savings/${id}`, data),
-  delete: (id) => api.delete(`/savings/${id}`),
+  list: () => api.get('/api/savings'),
+  create: (data) => api.post('/api/savings', data),
+  update: (id, data) => api.put(`/api/savings/${id}`, data),
+  delete: (id) => api.delete(`/api/savings/${id}`),
 }
 
 // ── Debts ─────────────────────────────────────────────
 export const debtsApi = {
-  list: () => api.get('/debts'),
-  create: (data) => api.post('/debts', data),
-  update: (id, data) => api.put(`/debts/${id}`, data),
-  delete: (id) => api.delete(`/debts/${id}`),
+  list: () => api.get('/api/debts'),
+  create: (data) => api.post('/api/debts', data),
+  update: (id, data) => api.put(`/api/debts/${id}`, data),
+  delete: (id) => api.delete(`/api/debts/${id}`),
 }
 
 // ── Analytics ─────────────────────────────────────────
 export const analyticsApi = {
-  monthly: (year) => api.get('/analytics/monthly', { params: { year } }),
+  monthly: (year) => api.get('/api/analytics/monthly', { params: { year } }),
 }
 
 // ── Team ──────────────────────────────────────────────
 export const teamApi = {
-  list: () => api.get('/team'),
-  invite: (data) => api.post('/team/invite', data),
-  remove: (id) => api.delete(`/team/${id}`),
+  list: () => api.get('/api/team'),
+  invite: (data) => api.post('/api/team/invite', data),
+  remove: (id) => api.delete(`/api/team/${id}`),
 }
 
 export default api
