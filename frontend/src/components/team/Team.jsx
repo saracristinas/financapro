@@ -16,7 +16,7 @@ export default function Team() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ email: '', role: 'EDITOR' })
   const [inviting, setInviting] = useState(false)
-  const { addNotification, unlockAchievement } = useAppStore()
+  const { addNotification, unlockAchievement, addToast } = useAppStore()
 
   const load = () => {
     setLoading(true)
@@ -29,34 +29,47 @@ export default function Team() {
     setInviting(true)
     try {
       const response = await teamApi.invite(form)
-      const { emailStatus } = response.data
+      const { membro, emailStatus } = response.data
+
+      if (!emailStatus) {
+        console.error('❌ emailStatus não foi retornado:', response.data)
+        addToast('error', '❌ Erro de resposta do servidor', 'emailStatus não encontrado na resposta')
+        setInviting(false)
+        return
+      }
 
       setForm({ email: '', role: 'EDITOR' })
       setShowForm(false)
       unlockAchievement('team_member')
 
-      // Mostrar notificação com status real do email
+      // Mostrar Toast com status real do email
       if (emailStatus.enviado) {
-        addNotification({
-          emoji: '✉️',
-          title: 'Email enviado com sucesso!',
-          message: emailStatus.mensagem
-        })
+        addToast('success', '✅ Convite enviado com sucesso!', `Email enviado para ${form.email}`)
       } else {
-        addNotification({
-          emoji: '⚠️',
-          title: 'Convite criado, mas email não foi enviado',
-          message: emailStatus.mensagem
-        })
+        addToast('error', '⚠️ Convite criado, mas email não foi enviado', emailStatus.mensagem)
       }
 
       load()
     } catch (error) {
-      addNotification({
-        emoji: '❌',
-        title: 'Erro ao convidar',
-        message: error.response?.data?.message || 'Erro desconhecido'
-      })
+      console.error('❌ Erro completo:', error)
+      console.error('Status:', error.response?.status)
+      console.error('Data:', error.response?.data)
+
+      let mensagem = 'Erro desconhecido ao convidar'
+
+      if (error.response?.status === 401) {
+        mensagem = 'Seu token expirou. Faça login novamente.'
+      } else if (error.response?.status === 403) {
+        mensagem = 'Você não tem permissão para convidar (precisa ser ADMIN).'
+      } else if (error.response?.status === 400) {
+        mensagem = error.response?.data?.message || 'Email ou permissão inválida.'
+      } else if (error.response?.data?.message) {
+        mensagem = error.response.data.message
+      } else if (error.message) {
+        mensagem = error.message
+      }
+
+      addToast('error', '❌ Erro ao convidar', mensagem)
     } finally { setInviting(false) }
   }
 

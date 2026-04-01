@@ -39,20 +39,11 @@ public class EquipeService {
         TeamMember saved = membroEquipeRepository.save(tm);
 
         // 🚀 Enviar email de convite
-        String linkAceitar = "https://financapro-1.onrender.com"; // Link para aceitar (você pode customizar)
-        emailService.enviarConviteEquipe(req.getEmail(), owner.getName(), linkAceitar);
+        String linkAceitar = "https://financapro-1.onrender.com";
+        var emailResultado = emailService.enviarConviteEquipe(req.getEmail(), owner.getName(), linkAceitar);
 
-        // Aguardar um pouco para o email ser processado
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        // Obter o resultado do email
-        var emailResultado = emailService.obterUltimoResultado();
+        // Retornar resposta com status do email
         var emailStatus = new ConviteResponseDto.EmailStatusDto(emailResultado.isSucesso(), emailResultado.getMensagem());
-
         return new ConviteResponseDto(toDto(saved), emailStatus);
     }
 

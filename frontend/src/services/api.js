@@ -27,9 +27,18 @@ api.interceptors.request.use(config => {
 })
 
 api.interceptors.response.use(
-  r => r,
+  r => {
+    console.log('[API] ✓ Resposta OK -', r.status, r.config.url)
+    return r
+  },
   err => {
-    console.error('[API] Erro:', err.response?.status, err.response?.statusText)
+    console.error('[API] ❌ Erro na resposta:', {
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      url: err.config?.url,
+      data: err.response?.data,
+      message: err.message
+    })
 
     if (err.response?.status === 401) {
       console.error('[API] 401 Unauthorized - fazendo logout')

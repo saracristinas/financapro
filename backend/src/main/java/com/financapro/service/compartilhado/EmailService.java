@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -16,22 +13,27 @@ import java.util.concurrent.CompletableFuture;
 public class EmailService {
 
     private final JavaMailSender mailSender;
-    private static EmailResultado ultimoResultado;
 
     @Value("${spring.mail.username:}")
     private String emailRemetente;
 
-    @Async
-    public void enviarConviteEquipe(String emailDestinatario, String nomeConvidador, String linkAceitar) {
-        // Validar se as credenciais estão configuradas
-        if (emailRemetente == null || emailRemetente.isBlank()) {
-            String msg = "Email não foi enviado - credenciais de email não configuradas no servidor";
-            log.warn(msg);
-            ultimoResultado = EmailResultado.erro(msg);
-            return;
-        }
-
+    /**
+     * Envia email de convite para equipe
+     * Retorna resultado com status de sucesso/erro
+     */
+    public EmailResultado enviarConviteEquipe(String emailDestinatario, String nomeConvidador, String linkAceitar) {
+        log.info("[EMAIL-CONVITE] 📧 Iniciando envio de convite para: {}", emailDestinatario);
+        
         try {
+            // Validar se as credenciais estão configuradas
+            if (emailRemetente == null || emailRemetente.isBlank()) {
+                String msg = "Credenciais de email não configuradas no servidor - configure MAIL_USERNAME no ambiente";
+                log.error("[EMAIL-CONVITE] ❌ ERRO - {}", msg);
+                return EmailResultado.erro(msg);
+            }
+
+            log.debug("[EMAIL-CONVITE] 🔧 Preparando email para envio de: {} para: {}", emailRemetente, emailDestinatario);
+
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(emailRemetente);
             message.setTo(emailDestinatario);
@@ -39,21 +41,17 @@ public class EmailService {
             message.setText(construirMensagemConvite(nomeConvidador, linkAceitar));
 
             mailSender.send(message);
-            String msg = "Email enviado com sucesso para: " + emailDestinatario;
-            log.info(msg);
-            ultimoResultado = EmailResultado.sucesso(msg);
-        } catch (Exception e) {
-            String msg = "Erro ao enviar email para " + emailDestinatario + ": " + e.getMessage();
-            log.error(msg);
-            ultimoResultado = EmailResultado.erro(msg);
-        }
-    }
+            
+            String mensagem = "✅ Email de convite enviado com SUCESSO para: " + emailDestinatario;
+            log.info("[EMAIL-CONVITE] ✅ SUCESSO - Email enviado para: {} via servidor: {}", emailDestinatario, emailRemetente);
+            return EmailResultado.sucesso(mensagem);
 
-    public EmailResultado obterUltimoResultado() {
-        if (ultimoResultado == null) {
-            return EmailResultado.sucesso("Email sendo processado em background");
+        } catch (Exception e) {
+            String msgErro = "Falha ao enviar email para " + emailDestinatario + " - " + e.getClass().getSimpleName();
+            log.error("[EMAIL-CONVITE] ❌ ERRO - Destinatário: {}, Tipo: {}, Mensagem: {}", 
+                    emailDestinatario, e.getClass().getSimpleName(), e.getMessage(), e);
+            return EmailResultado.erro(msgErro);
         }
-        return ultimoResultado;
     }
 
     private String construirMensagemConvite(String nomeConvidador, String linkAceitar) {
@@ -68,6 +66,8 @@ public class EmailService {
                 "https://financapro-1.onrender.com";
     }
 }
+
+
 
 
 

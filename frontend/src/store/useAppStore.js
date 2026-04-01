@@ -39,6 +39,18 @@ export const useAppStore = create(
       })),
       clearNotifications: () => set({ notifications: [] }),
 
+      // ── Toast (Pop-up) ─────────────────────────────────
+      toasts: [],
+      addToast: (type, title, message) => set(s => ({
+        toasts: [
+          { id: Date.now(), type, title, message },
+          ...s.toasts
+        ]
+      })),
+      removeToast: (id) => set(s => ({
+        toasts: s.toasts.filter(t => t.id !== id)
+      })),
+
       // ── Achievements ───────────────────────────────────
       unlockedAchievements: [],
       unlockAchievement: (id) => set(s => {
@@ -62,3 +74,4 @@ export const useAppStore = create(
     { name: 'financapro-v2' }
   )
 )
+

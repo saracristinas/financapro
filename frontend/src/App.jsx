@@ -10,6 +10,7 @@ import Analytics from './components/analytics/Analytics'
 import { LoginPage, RegisterPage, ForgotPasswordPage } from './components/auth/AuthPages'
 import Achievements from './components/achievements/Achievements'
 import Team from './components/team/Team'
+import Toast from './components/Toast'
 import { THEME_OPTIONS, THEME_CREATURES } from './utils'
 
 const TABS = {
@@ -46,7 +47,7 @@ function AmbientCreatures({ themeKey }) {
 }
 
 export default function App() {
-  const { token, dark, themeKey, activeTab } = useAppStore()
+  const { token, dark, themeKey, activeTab, toasts, removeToast } = useAppStore()
   const [authMode, setAuthMode] = useState('login')
 
   // Apply dark class
@@ -91,6 +92,19 @@ export default function App() {
 
       {/* Mobile bottom nav */}
       <MobileBottomNav />
+
+      {/* Toast notifications */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          id={toast.id}
+          type={toast.type}
+          title={toast.title}
+          message={toast.message}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
     </div>
   )
 }
+
