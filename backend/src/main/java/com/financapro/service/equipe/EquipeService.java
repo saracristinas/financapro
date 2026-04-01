@@ -1,6 +1,7 @@
 package com.financapro.service.equipe;
 
 import com.financapro.dto.equipe.ConviteRequestDto;
+import com.financapro.dto.equipe.ConviteResponseDto;
 import com.financapro.dto.equipe.MembroEquipeResponseDto;
 import com.financapro.model.autenticacao.User;
 import com.financapro.model.equipe.TeamMember;
@@ -29,7 +30,7 @@ public class EquipeService {
             .stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    public MembroEquipeResponseDto invite(String email, ConviteRequestDto req) {
+    public ConviteResponseDto invite(String email, ConviteRequestDto req) {
         User owner = usuarioAcessoService.obterPorEmail(email);
         User.Role role = User.Role.valueOf(req.getRole().toUpperCase());
         TeamMember tm = TeamMember.builder()
@@ -41,7 +42,18 @@ public class EquipeService {
         String linkAceitar = "https://financapro-1.onrender.com"; // Link para aceitar (você pode customizar)
         emailService.enviarConviteEquipe(req.getEmail(), owner.getName(), linkAceitar);
 
-        return toDto(saved);
+        // Aguardar um pouco para o email ser processado
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Obter o resultado do email
+        var emailResultado = emailService.obterUltimoResultado();
+        var emailStatus = new ConviteResponseDto.EmailStatusDto(emailResultado.isSucesso(), emailResultado.getMensagem());
+
+        return new ConviteResponseDto(toDto(saved), emailStatus);
     }
 
     public void remove(String email, Long memberId) {

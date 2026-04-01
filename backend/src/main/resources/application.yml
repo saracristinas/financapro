@@ -16,6 +16,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+          fetch_size: 100
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
 
   # ── Mail (Email) ──────────────────────────────────────
   mail:

@@ -1,6 +1,7 @@
 package com.financapro.controller.equipe;
 
 import com.financapro.dto.equipe.ConviteRequestDto;
+import com.financapro.dto.equipe.ConviteResponseDto;
 import com.financapro.dto.equipe.MembroEquipeResponseDto;
 import com.financapro.service.equipe.EquipeService;
 import jakarta.validation.Valid;
@@ -31,7 +32,7 @@ public class EquipeController {
     }
 
     @PostMapping("/invite")
-    public MembroEquipeResponseDto invite(
+    public ConviteResponseDto invite(
         @AuthenticationPrincipal UserDetails user,
         @Valid @RequestBody ConviteRequestDto req
     ) {

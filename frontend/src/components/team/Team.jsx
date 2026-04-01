@@ -28,12 +28,35 @@ export default function Team() {
     e.preventDefault()
     setInviting(true)
     try {
-      await teamApi.invite(form)
+      const response = await teamApi.invite(form)
+      const { emailStatus } = response.data
+
       setForm({ email: '', role: 'EDITOR' })
       setShowForm(false)
       unlockAchievement('team_member')
-      addNotification({ emoji: '🐬', title: 'Convite enviado!', message: `Convite para ${form.email}` })
+
+      // Mostrar notificação com status real do email
+      if (emailStatus.enviado) {
+        addNotification({
+          emoji: '✉️',
+          title: 'Email enviado com sucesso!',
+          message: emailStatus.mensagem
+        })
+      } else {
+        addNotification({
+          emoji: '⚠️',
+          title: 'Convite criado, mas email não foi enviado',
+          message: emailStatus.mensagem
+        })
+      }
+
       load()
+    } catch (error) {
+      addNotification({
+        emoji: '❌',
+        title: 'Erro ao convidar',
+        message: error.response?.data?.message || 'Erro desconhecido'
+      })
     } finally { setInviting(false) }
   }
 

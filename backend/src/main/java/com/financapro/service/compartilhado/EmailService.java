@@ -8,12 +8,15 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private static EmailResultado ultimoResultado;
 
     @Value("${spring.mail.username:}")
     private String emailRemetente;
@@ -22,7 +25,9 @@ public class EmailService {
     public void enviarConviteEquipe(String emailDestinatario, String nomeConvidador, String linkAceitar) {
         // Validar se as credenciais estão configuradas
         if (emailRemetente == null || emailRemetente.isBlank()) {
-            log.warn("Email não foi enviado para {} pois as credenciais de email não estão configuradas no servidor", emailDestinatario);
+            String msg = "Email não foi enviado - credenciais de email não configuradas no servidor";
+            log.warn(msg);
+            ultimoResultado = EmailResultado.erro(msg);
             return;
         }
 
@@ -34,10 +39,21 @@ public class EmailService {
             message.setText(construirMensagemConvite(nomeConvidador, linkAceitar));
 
             mailSender.send(message);
-            log.info("Email enviado com sucesso para: {}", emailDestinatario);
+            String msg = "Email enviado com sucesso para: " + emailDestinatario;
+            log.info(msg);
+            ultimoResultado = EmailResultado.sucesso(msg);
         } catch (Exception e) {
-            log.error("Erro ao enviar email de convite para {}: {}", emailDestinatario, e.getMessage());
+            String msg = "Erro ao enviar email para " + emailDestinatario + ": " + e.getMessage();
+            log.error(msg);
+            ultimoResultado = EmailResultado.erro(msg);
         }
+    }
+
+    public EmailResultado obterUltimoResultado() {
+        if (ultimoResultado == null) {
+            return EmailResultado.sucesso("Email sendo processado em background");
+        }
+        return ultimoResultado;
     }
 
     private String construirMensagemConvite(String nomeConvidador, String linkAceitar) {
@@ -52,4 +68,6 @@ public class EmailService {
                 "https://financapro-1.onrender.com";
     }
 }
+
+
 
