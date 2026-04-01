@@ -8,6 +8,9 @@ target/
 
 # Env
 .env
+.env.local
+.env.*.local
+*.env
 
 # IDE
 .vscode/
